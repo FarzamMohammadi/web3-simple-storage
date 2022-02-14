@@ -38,9 +38,11 @@ bytecode = compiled_sol["contracts"]["SimpleStorage.sol"]["SimpleStorage"]["evm"
 abi = compiled_sol["contracts"]["SimpleStorage.sol"]["SimpleStorage"]["abi"]
 
 # Connecting to ganache
-w3 = Web3(Web3.HTTPProvider("HTTP://127.0.0.1:7545"))
-chain_id = 1337
-my_address = "0x73f27Af156Cec15bf747CcD81590Fb62fea83dCa"
+w3 = Web3(
+    Web3.HTTPProvider("https://rinkeby.infura.io/v3/021a23b4ccd548ec8cfb7413e1e43feb")
+)
+chain_id = 4
+my_address = "0xF8D0D102a55a49e6Bee7d5A429628eC02EE95f88"
 # Add '0x' at the beginning to conver to hex
 private_key = os.getenv("PRIVATE_KEY")
 
@@ -64,6 +66,7 @@ transaction = SimpleStorage.constructor().buildTransaction(
 # Sign
 signed_txn = w3.eth.account.signTransaction(transaction, private_key=private_key)
 # Send
+print("Deplyoing Contract")
 tx_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
 tx_receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
 print(f"Done! Contract deployed to {tx_receipt.contractAddress}")
@@ -77,6 +80,7 @@ simple_storage = w3.eth.contract(address=tx_receipt.contractAddress, abi=abi)
 
 # Initial value of fav number
 print(simple_storage.functions.retrieve().call())
+print("Updating Contract...")
 store_transaction = simple_storage.functions.store(15).buildTransaction(
     {
         "chainId": chain_id,
@@ -90,4 +94,5 @@ signed_store_txn = w3.eth.account.signTransaction(
 )
 transaction_hash = w3.eth.send_raw_transaction(signed_store_txn.rawTransaction)
 tx_receipt = w3.eth.wait_for_transaction_receipt(transaction_hash)
+print("Contract Updated!")
 print(simple_storage.functions.retrieve().call())
